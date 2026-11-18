@@ -6,6 +6,16 @@ require __DIR__ . "/functions.php";
 
 // Baca semua pesanan dari file JSON, tampilkan yang terbaru di atas
 $daftarPesanan = array_reverse(bacaPesanan(FILE_PESANAN));
+
+// Latihan Mandiri 4: Pencarian nama pemesan dengan GET
+$kataKunci = trim((string) filter_input(INPUT_GET, "q"));
+if ($kataKunci !== "") {
+    $daftarPesanan = array_filter(
+        $daftarPesanan,
+        fn(array $p): bool => stripos($p["nama"], $kataKunci) !== false
+    );
+}
+
 $totalOmzet = array_sum(array_column($daftarPesanan, "total"));
 ?>
 <!DOCTYPE html>
@@ -28,36 +38,51 @@ $totalOmzet = array_sum(array_column($daftarPesanan, "total"));
 
 <main class="wadah">
     <h2>Daftar Pesanan</h2>
+
+    <!-- Form pencarian nama pemesan (GET) -->
+    <form action="daftar-pesanan.php" method="get" class="cari">
+        <input type="search" name="q" placeholder="Cari nama pemesan..." value="<?= e($kataKunci) ?>">
+        <button type="submit">Cari</button>
+        <?php if ($kataKunci !== ""): ?>
+            <a href="daftar-pesanan.php" class="tombol" style="background-color: #6b6b8a;">Reset</a>
+        <?php endif; ?>
+    </form>
+
     <p class="info">
-         <?= count($daftarPesanan) ?> pesanan · Total <?= formatRupiah($totalOmzet) ?>
+        <?= count($daftarPesanan) ?> pesanan · Total <?= formatRupiah($totalOmzet) ?>
+        <?= $kataKunci !== "" ? '(filter nama: "' . e($kataKunci) . '")' : "" ?>
     </p>
 
     <?php if (count($daftarPesanan) === 0): ?>
-        <p class="kosong">Belum ada pesanan.</p>
+        <p class="kosong">Belum ada pesanan yang sesuai.</p>
     <?php else: ?>
         <table class="tabel">
             <thead>
                 <tr>
-                     <th>Kode</th>
-                     <th>Waktu</th>
-                     <th>Nama</th>
-                     <th>Produk</th>
-                     <th>Jumlah</th>
-                     <th>Total</th>
-                     <th>Catatan</th>
+                    <th>Kode</th>
+                    <th>Waktu</th>
+                    <th>Nama</th>
+                    <th>Alamat</th>
+                    <th>Metode</th>
+                    <th>Produk</th>
+                    <th>Jumlah</th>
+                    <th>Total</th>
+                    <th>Catatan</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($daftarPesanan as $pesanan): ?>
-                     <tr>
-                         <td><?= e($pesanan["kode"]) ?></td>
-                         <td><?= e($pesanan["waktu"]) ?></td>
-                         <td><?= e($pesanan["nama"]) ?></td>
-                         <td><?= e($pesanan["produk"]) ?></td>
-                         <td><?= $pesanan["jumlah"] ?></td>
-                         <td><?= formatRupiah($pesanan["total"]) ?></td>
-                         <td><?= e($pesanan["catatan"]) ?></td>
-                     </tr>
+                    <tr>
+                        <td><?= e($pesanan["kode"]) ?></td>
+                        <td><?= e($pesanan["waktu"]) ?></td>
+                        <td><?= e($pesanan["nama"]) ?></td>
+                        <td><?= e($pesanan["alamat"] ?? "-") ?></td>
+                        <td><?= e($pesanan["metode"] ?? "-") ?></td>
+                        <td><?= e($pesanan["produk"]) ?></td>
+                        <td><?= $pesanan["jumlah"] ?></td>
+                        <td><?= formatRupiah($pesanan["total"]) ?></td>
+                        <td><?= e($pesanan["catatan"]) ?></td>
+                    </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
