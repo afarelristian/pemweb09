@@ -5,18 +5,25 @@ require __DIR__ . "/data.php";
 require __DIR__ . "/functions.php";
 
 // ---------- 1. Tangkap parameter GET dari URL ----------
-// Contoh URL: index.php?q=kopi&kategori=Minuman
-$kataKunci = trim((string) filter_input(INPUT_GET, "q"));
+$kataKunci       = trim((string) filter_input(INPUT_GET, "q"));
 $kategoriDipilih = (string) filter_input(INPUT_GET, "kategori");
+$urutDipilih     = (string) filter_input(INPUT_GET, "urut");
 
-// ---------- 2. Validasi: kategori harus ada di daftar putih ----------
+// ---------- 2. Validasi whitelist ----------
 if (!in_array($kategoriDipilih, $daftarKategori, true)) {
     $kategoriDipilih = "Semua";
 }
 
-// ---------- 3. Olah data: filter kategori, lalu cari nama ----------
+// ---------- 3. Olah data: filter kategori, cari nama, lalu urutkan ----------
 $produkTampil = filterKategori($daftarProduk, $kategoriDipilih);
 $produkTampil = cariProduk($produkTampil, $kataKunci);
+
+// Latihan Mandiri 3: Urutkan dengan usort (nilai di luar daftar diabaikan)
+if ($urutDipilih === "termurah") {
+    usort($produkTampil, fn(array $a, array $b): int => $a["harga"] <=> $b["harga"]);
+} elseif ($urutDipilih === "termahal") {
+    usort($produkTampil, fn(array $a, array $b): int => $b["harga"] <=> $a["harga"]);
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -37,15 +44,19 @@ $produkTampil = cariProduk($produkTampil, $kataKunci);
 </header>
 
 <main class="wadah">
-    <!-- Form pencarian: method GET agar hasilnya bisa di-bookmark dan dibagikan -->
     <form action="index.php" method="get" class="cari">
         <input type="search" name="q" placeholder="Cari produk..." value="<?= e($kataKunci) ?>">
         <select name="kategori">
             <?php foreach ($daftarKategori as $kategori): ?>
                 <option value="<?= e($kategori) ?>" <?= $kategori === $kategoriDipilih ? "selected" : "" ?>>
-                     <?= e($kategori) ?>
+                    <?= e($kategori) ?>
                 </option>
             <?php endforeach; ?>
+        </select>
+        <select name="urut">
+            <option value="">Urutkan: Default</option>
+            <option value="termurah" <?= $urutDipilih === "termurah" ? "selected" : "" ?>>Harga Termurah</option>
+            <option value="termahal" <?= $urutDipilih === "termahal" ? "selected" : "" ?>>Harga Termahal</option>
         </select>
         <button type="submit">Cari</button>
     </form>
