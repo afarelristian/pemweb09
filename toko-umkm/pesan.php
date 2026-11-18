@@ -8,6 +8,8 @@ require __DIR__ . "/functions.php";
 $input = [
     "nama"        => "",
     "whatsapp"    => "",
+    "alamat"      => "",
+    "metode"      => "",
     "kode_produk" => (string) filter_input(INPUT_GET, "produk"),
     "jumlah"      => "1",
     "catatan"     => "",
@@ -20,6 +22,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $input = [
         "nama"        => trim((string) filter_input(INPUT_POST, "nama")),
         "whatsapp"    => trim((string) filter_input(INPUT_POST, "whatsapp")),
+        "alamat"      => trim((string) filter_input(INPUT_POST, "alamat")),
+        "metode"      => trim((string) filter_input(INPUT_POST, "metode")),
         "kode_produk" => (string) filter_input(INPUT_POST, "kode_produk"),
         "jumlah"      => trim((string) filter_input(INPUT_POST, "jumlah")),
         "catatan"     => trim((string) filter_input(INPUT_POST, "catatan")),
@@ -39,6 +43,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             "waktu"    => date("Y-m-d H:i"),
             "nama"     => $input["nama"],
             "whatsapp" => $input["whatsapp"],
+            "alamat"   => $input["alamat"],
+            "metode"   => $input["metode"],
             "produk"   => $produk["nama"],
             "harga"    => $produk["harga"],
             "jumlah"   => $jumlah,
@@ -52,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 // ---------- 3. Setelah redirect: baca status dari URL (GET) ----------
-$status = filter_input(INPUT_GET, "status");
+$status   = filter_input(INPUT_GET, "status");
 $kodeBaru = filter_input(INPUT_GET, "kode", FILTER_VALIDATE_REGEXP, [
     "options" => ["regexp" => "/^PSN-[0-9]{4}$/"],
 ]);
@@ -81,8 +87,8 @@ $berhasil = ($status === "berhasil" && is_string($kodeBaru));
 
     <?php if ($berhasil): ?>
         <p class="alert alert--sukses">
-             Terima kasih! Pesanan <strong><?= e($kodeBaru) ?></strong> sudah kami terima.
-             Admin akan menghubungi Anda lewat WhatsApp.
+            Terima kasih! Pesanan <strong><?= e($kodeBaru) ?></strong> sudah kami terima.
+            Admin akan menghubungi Anda lewat WhatsApp.
         </p>
     <?php endif; ?>
 
@@ -105,6 +111,33 @@ $berhasil = ($status === "berhasil" && is_string($kodeBaru));
                    value="<?= e($input["whatsapp"]) ?>">
             <?php if (isset($kesalahan["whatsapp"])): ?>
                 <small class="galat"><?= e($kesalahan["whatsapp"]) ?></small>
+            <?php endif; ?>
+        </div>
+
+        <div class="isian">
+            <label for="alamat">Alamat pengiriman</label>
+            <textarea id="alamat" name="alamat" rows="2" placeholder="Jalan, RT/RW, Kelurahan, Kecamatan, Kota"><?= e($input["alamat"]) ?></textarea>
+            <?php if (isset($kesalahan["alamat"])): ?>
+                <small class="galat"><?= e($kesalahan["alamat"]) ?></small>
+            <?php endif; ?>
+        </div>
+
+        <div class="isian">
+            <label>Metode pengambilan</label>
+            <div style="display: flex; gap: 16px; margin-top: 4px;">
+                <label style="font-weight: normal; cursor: pointer;">
+                    <input type="radio" name="metode" value="Ambil di toko"
+                        <?= $input["metode"] === "Ambil di toko" ? "checked" : "" ?>>
+                    Ambil di toko
+                </label>
+                <label style="font-weight: normal; cursor: pointer;">
+                    <input type="radio" name="metode" value="Kirim kurir"
+                        <?= $input["metode"] === "Kirim kurir" ? "checked" : "" ?>>
+                    Kirim kurir
+                </label>
+            </div>
+            <?php if (isset($kesalahan["metode"])): ?>
+                <small class="galat"><?= e($kesalahan["metode"]) ?></small>
             <?php endif; ?>
         </div>
 
